@@ -1994,7 +1994,13 @@ int main()
 
 
 
-错误做法的共同点是混淆了后期赋值和初始化。
+错误做法的共同点是混淆了后期赋值和初始化。那我真的想后期赋值怎么办呢？
+
+```c
+p2=(struct t){114514,1919,810};
+```
+
+`(struct t)`相当于强制类型转换。
 
 
 
@@ -2002,57 +2008,154 @@ int main()
 
 ###### 和数组的异同
 
-* 定义时若只初始化一个元素，那么其他的元素都默认初始化为0
+* 同
 
-  * ```c
-    #include <stdio.h>
-    #define N 5
-    int main()
-    {
-        struct t{
-            int x;
-            int y;
-            int z;
-        }p1={114514},p2;
-        printf("p1.x=%d\tp1.y=%d\tp1.z=%d\n",p1.x,p1.y,p1.z);
-        int a[N]={1919810},i;
-        for (i=0;i<N;i++) {
-            printf("a[%d]=%d\t",i,a[i]);
-        }
-        return 0;
-    }
-    ```
+  * 定义时若只初始化一个元素，那么其他的元素都默认初始化为0
 
-  * ```
-    p1.x=114514	p1.y=0	p1.z=0
-    a[0]=1919810	a[1]=0	a[2]=0	a[3]=0	a[4]=0	
-    ```
+    * ```c
+      #include <stdio.h>
+      #define N 5
+      int main()
+      {
+          struct t{
+              int x;
+              int y;
+              int z;
+          }p1={114514},p2;
+          printf("p1.x=%d\tp1.y=%d\tp1.z=%d\n",p1.x,p1.y,p1.z);
+          int a[N]={1919810},i;
+          for (i=0;i<N;i++) {
+              printf("a[%d]=%d\t",i,a[i]);
+          }
+          return 0;
+      }
+      ```
 
-* 定义时若没做任何初始化，那么元素里的值就是随机的，就像开盲盒
+    * ```
+      p1.x=114514	p1.y=0	p1.z=0
+      a[0]=1919810	a[1]=0	a[2]=0	a[3]=0	a[4]=0	
+      ```
 
-  * ```c
-    #include <stdio.h>
-    #define N 5
-    int main()
-    {
-        struct t{
-            int x;
-            int y;
-            int z;
-        }p1,p2;
-        printf("p1.x=%d\tp1.y=%d\tp1.z=%d\n",p1.x,p1.y,p1.z);
-        int a[N],i;
-        for (i=0;i<N;i++) {
-            printf("a[%d]=%d\t",i,a[i]);
-        }
-        return 0;
-    }
-    ```
+  * 定义时若没做任何初始化，那么元素里的值就是随机的，就像开盲盒
 
-  * ```
-    p1.x=77410000	p1.y=1	p1.z=81412112
-    a[0]=226223824	a[1]=3	a[2]=81012867	a[3]=2	a[4]=9	
-    ```
+    * ```c
+      #include <stdio.h>
+      #define N 5
+      int main()
+      {
+          struct t{
+              int x;
+              int y;
+              int z;
+          }p1,p2;
+          printf("p1.x=%d\tp1.y=%d\tp1.z=%d\n",p1.x,p1.y,p1.z);
+          int a[N],i;
+          for (i=0;i<N;i++) {
+              printf("a[%d]=%d\t",i,a[i]);
+          }
+          return 0;
+      }
+      ```
+
+    * ```
+      p1.x=77410000	p1.y=1	p1.z=81412112
+      a[0]=226223824	a[1]=3	a[2]=81012867	a[3]=2	a[4]=9	
+      ```
+
+* 异
+
+  * 结构有虚实之分，数组全是实实在在的
+
+    * ```c
+      struct t{
+              int x;
+              int y;
+              int z;
+          }p1,p2;
+      ```
+
+    * t是结构类型，是虚的，只可意会；p1和p2才是实在的结构变量
+
+  * 结构可以后期整体赋值，而数组只能在初始化的时候整体赋值，后期想赋值只能遍历
+
+  * 结构还可以相互赋值
+
+    * `p1=p2`
+      * 相当于`p1.x=p2.x,p1.y=p2.y;`
+
+  * 数组自己就是指针，但是结构得用上&来取地址，而且指针也要是结构类型
+
+    * ```c
+      #include <stdio.h>
+      #define N 5
+      int main()
+      {
+          struct space{
+              int x;
+              int y;
+              int z;
+          }p1={114514},p2;
+          struct space *p=&p1;
+          printf("%p",p);
+          return 0;
+      }
+      ```
+
+    * ```
+      0x3058046c0
+      ```
+
+整体展示：
+
+```c
+#include <stdio.h>
+#define N 5
+int main()
+{
+    struct t{
+        int x;
+        int y;
+        int z;
+    }p1={114514},p2;
+    p2=(struct t){114514,1919,810};
+    p1=p2;
+    printf("p1.x=%d\tp1.y=%d\tp1.z=%d\n",p1.x,p1.y,p1.z);
+    return 0;
+}
+```
+
+```
+p1.x=114514	p1.y=1919	p1.z=810
+
+```
+
+
+
+#### 结构与函数
+
+结构可以作为函数的参数，其原理是：函数内部新生成一个结构，并复制外面的结构的值到函数里面的结构。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
