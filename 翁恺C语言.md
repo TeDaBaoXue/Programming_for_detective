@@ -2107,6 +2107,41 @@ p2=(struct t){114514,1919,810};
 
 
 
+##### 结构指针
+
+我的直觉逐步合理化，主动探索结构指针，并在CLion的指引下学会对结构内部成员取地址。
+
+###### 结构指针p的地址输出和其成员地址输出的区别
+
+```c
+#include <stdio.h>
+#define N 5
+int main()
+{
+    struct space{
+        int x;
+        int y;
+        int z;
+    }p1={114514},p2;
+    struct space *p=&p1;
+    printf("p=%p\tp->x=%p\tp->y=%p\tp->z=%p\n",p,p->x,p->y,p->z);
+    printf("&p1=%p\t&p1.x=%p\t&p1.y=%p\t&p1.z=%p\n",&p1,&p1.x,&p1.y,&p1.z);
+    return 0;
+}
+```
+
+```
+p=0x304ea26c0	p->x=0x1bf52	p->y=0x0	p->z=0x0
+&p1=0x304ea26c0	&p1.x=0x304ea26c0	&p1.y=0x304ea26c4	&p1.z=0x304ea26c8
+
+```
+
+目前还有点问题。`p->y`和`p->z`显然不是
+
+16进制下的`1bf52=2+5x16+15x16^2+11x16^3+16^4=114514`，再联系`p->y=0x0	p->z=0x0`，看来输出的是`p.x`、`p.y`、`p.z`的值，以16进制罢了。
+
+
+
 #### 结构与函数
 
 结构可以作为函数的参数，其原理是：函数内部新生成一个结构，并复制外面的结构的值到函数里面的结构。然后也可以返回一个结构。
@@ -2178,6 +2213,36 @@ Declaration shadows a variable in the global scope
 
 * getstruct函数成功读取today
 * 退出getstruct之后today又清零了！！！
+
+所以导致
+
+```c
+#include <stdio.h>
+struct date{
+    int y;
+    int m;
+    int d;
+}today,t0;
+void getstruct(struct date today)
+{
+    scanf("%d%d%d",&today.y,&today.m,&today.d);
+}
+void putstruct(struct date today)
+{
+    printf("%d\t%d\t%d",today.y,today.m,today.d);
+}
+int main()
+{
+    printf("Please input today:");
+    getstruct(today);
+    putstruct(today);
+}
+```
+
+```
+Please input today:11 45 14
+0	0	0
+```
 
 
 
