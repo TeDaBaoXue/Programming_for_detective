@@ -1462,7 +1462,7 @@ strcpy(s1,s2)根本就不是copy and paste,而是残忍的替换：
 s1=苏修叛徒集团+社会帝国主义,已经被替换成s2了。
 ```
 
-有趣的事，即使s1更短也能被强行替换成s2，不用担心什么越界的问题。——毕竟'\0'也是一个元素，是可以被替换的，只要定义时给出的存储空间够用就行了。
+有趣的是，即使s1更短也能被强行替换成s2，不用担心什么越界的问题。——毕竟'\0'也是一个元素，是可以被替换的，只要定义时给出的存储空间够用就行了。
 
 那么如果真的连存储空间都不够呢？是否还能替换？比如我们用上`char s1[]="0";`这样s1的长度就只有1。
 
@@ -1788,7 +1788,7 @@ int main()
         int month;
         int day;
         int year;
-    };//CLion自动帮我补奇了分号
+    };//CLion自动帮我补齐了分号
     struct date today;//定义了一个结构类型的变量today，它的内容丰富
     today.month=5;
     today.day=27;
@@ -2105,35 +2105,79 @@ p2=(struct t){114514,1919,810};
       0x3058046c0
       ```
 
-整体展示：
-
-```c
-#include <stdio.h>
-#define N 5
-int main()
-{
-    struct t{
-        int x;
-        int y;
-        int z;
-    }p1={114514},p2;
-    p2=(struct t){114514,1919,810};
-    p1=p2;
-    printf("p1.x=%d\tp1.y=%d\tp1.z=%d\n",p1.x,p1.y,p1.z);
-    return 0;
-}
-```
-
-```
-p1.x=114514	p1.y=1919	p1.z=810
-
-```
-
 
 
 #### 结构与函数
 
-结构可以作为函数的参数，其原理是：函数内部新生成一个结构，并复制外面的结构的值到函数里面的结构。
+结构可以作为函数的参数，其原理是：函数内部新生成一个结构，并复制外面的结构的值到函数里面的结构。然后也可以返回一个结构。
+
+下面我用一个程序来展示
+
+* 结构作为函数参数是什么样的
+* 如何写一个函数能一次性读取整个结构
+  * 要用指针
+  * 也可以用赋值语句代替指针
+
+出师不利，不知是不是CLion对结构作为参数审核过于严苛。凭什么给我报错啊！？
+
+```c
+#include <stdio.h>
+void getstruct(struct date today)
+{
+    scanf("%d%d%d",&today.y,&today.m,&today.d);
+    return today;
+}
+int main()
+{
+    struct date{
+        int y;
+        int m;
+        int d;
+    }today,t0;
+    printf("Please input today:");
+    getstruct(today);
+}
+
+```
+
+```
+Variable has incomplete type 'struct date'
+Argument type 'struct date' is incomplete
+Declaration of 'struct date' will not be visible outside of this function
+```
+
+SOGA!是因为我把结构定义放在main函数里面，所以函数读取不到。我把它放到外面：
+
+```c
+#include <stdio.h>
+struct date{
+    int y;
+    int m;
+    int d;
+}today,t0;
+void getstruct(struct date today)
+{
+    scanf("%d%d%d",&today.y,&today.m,&today.d);
+}
+int main()
+{
+    printf("Please input today:");
+    getstruct(today);
+}
+```
+
+仍然有warning，是和参数命名有关的：
+
+```
+Declaration shadows a variable in the global scope
+```
+
+可能是因为today之前已经被定义过了，所以这里计算机有点懵，但是仍然可以正常运行。
+
+发现：
+
+* getstruct函数成功读取today
+* 退出getstruct之后today又清零了！！！
 
 
 
