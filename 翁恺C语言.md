@@ -2136,9 +2136,67 @@ p=0x304ea26c0	p->x=0x1bf52	p->y=0x0	p->z=0x0
 
 ```
 
-目前还有点问题。`p->y`和`p->z`显然不是
+目前还有点问题。`p->y`和`p->z`显然不是地址。
 
-16进制下的`1bf52=2+5x16+15x16^2+11x16^3+16^4=114514`，再联系`p->y=0x0	p->z=0x0`，看来输出的是`p.x`、`p.y`、`p.z`的值，以16进制罢了。
+16进制下的`1bf52=2+5x16+15x16^2+11x16^3+16^4=114514`，再联系`p->y=0x0	p->z=0x0`，看来输出的是`p1.x`、`p1.y`、`p1.z`的值，以16进制罢了。
+
+所以我们换回%d，发现果然输出的是`p1.x`、`p1.y`、`p1.z`的值：
+
+```c
+#include <stdio.h>
+#define N 5
+int main()
+{
+    struct space{
+        int x;
+        int y;
+        int z;
+    }p1={114514},p2;
+    struct space *p=&p1;
+    printf("p=%p\tp->x=%d\tp->y=%d\tp->z=%d\n",p,p->x,p->y,p->z);
+    printf("&p1=%p\t&p1.x=%p\t&p1.y=%p\t&p1.z=%p\n",&p1,&p1.x,&p1.y,&p1.z);
+    return 0;
+}
+```
+
+```
+p=0x3053dd6c0	p->x=114514	p->y=0	p->z=0
+&p1=0x3053dd6c0	&p1.x=0x3053dd6c0	&p1.y=0x3053dd6c4	&p1.z=0x3053dd6c8
+
+```
+
+敢情`p1.x==p->x`,`p1.y==p->y`,`p1.z==p->z`，这个箭头`->`挺灵性的。
+
+```c
+#include <stdio.h>
+#define N 5
+int main()
+{
+    struct space{
+        int x;
+        int y;
+        int z;
+    }p1={114514},p2;
+    struct space *p=&p1;
+    printf("*p=&p1\np=%p\t&p->x=%p\t&p->y=%p\t&p->z=%p\n",p,&p->x,&p->y,&p->z);
+    printf("&p1=%p\t&p1.x=%p\t&p1.y=%p\t&p1.z=%p\n",&p1,&p1.x,&p1.y,&p1.z);
+    return 0;
+}
+```
+
+```
+*p=&p1
+p=0x3084a76c0	&p->x=0x3084a76c0	&p->y=0x3084a76c4	&p->z=0x3084a76c8
+&p1=0x3084a76c0	&p1.x=0x3084a76c0	&p1.y=0x3084a76c4	&p1.z=0x3084a76c8
+```
+
+既然`p1.x==p->x`,`p1.y==p->y`,`p1.z==p->z`，那么加上&才能取地址。
+
+
+
+
+
+
 
 
 
@@ -2244,9 +2302,71 @@ Please input today:11 45 14
 0	0	0
 ```
 
+为了实现getstruct和putstruct，一定要搞明白函数如何改变结构的值。
 
+先把重名的形参today换掉：
 
+```c
+#include <stdio.h>
+struct date{
+    int y;
+    int m;
+    int d;
+}today,t0;
+void getstruct(struct date t)
+{
+    scanf("%d%d%d",&today.y,&today.m,&today.d);
+}
+void putstruct(struct date t)
+{
+    printf("%d\t%d\t%d",today.y,today.m,today.d);
+}
+int main()
+{
+    printf("Please input today:");
+    getstruct(today);
+    putstruct(today);
+}
+```
 
+```
+Please input today:11 45 14
+11	45	14
+```
+
+竟然成功了🤔，仅仅是换了形参的名字而已。
+
+我的推理是：如果形参不是today，那么函数里面关于today 的输入输出语句就是针对开头定义的、适用所有变量空间的today，但是如果形参是today，那么函数内部会新建一个today来代替全局的today，所以就无法改变我们想要的today。
+
+为了验证`函数内部会新建一个today来代替全局的today`，我们再把函数内部的today全部换成t：
+
+```c
+#include <stdio.h>
+struct date{
+    int y;
+    int m;
+    int d;
+}today,t0;
+void getstruct(struct date t)
+{
+    scanf("%d%d%d",&t.y,&t.m,&t.d);
+}
+void putstruct(struct date t)
+{
+    printf("%d\t%d\t%d",t.y,t.m,t.d);
+}
+int main()
+{
+    printf("Please input today:");
+    getstruct(today);
+    putstruct(today);
+}
+```
+
+```
+Please input today:11 45 14
+0	0	0
+```
 
 
 
