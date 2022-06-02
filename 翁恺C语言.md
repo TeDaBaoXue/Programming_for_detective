@@ -2368,7 +2368,37 @@ Please input today:11 45 14
 0	0	0
 ```
 
+`函数内部会新建一个today来代替全局的today`确实得到了验证，但我们反而希望上面的程序可以成功，毕竟这个比较省力。
 
+经过简单的推理,不难想到用指针：
+
+```c
+#include <stdio.h>
+struct date{
+    int y;
+    int m;
+    int d;
+}today,t0;
+void getstruct(struct date *t)
+{
+    scanf("%d%d%d",&t->y,&t->m,&t->d);
+}
+void putstruct(struct date *t)
+{
+    printf("%d\t%d\t%d",t->y,t->m,t->d);
+}
+int main()
+{
+    printf("Please input today:");
+    getstruct(&today);
+    putstruct(&today);
+}
+```
+
+```
+Please input today:11 45 14
+11	45	14
+```
 
 
 
