@@ -2400,6 +2400,276 @@ Please input today:11 45 14
 11	45	14
 ```
 
+注意`printf("%d\t%d\t%d",t->y,t->m,t->d);`不能换成`printf("%d\t%d\t%d",*t->y,*t->m,*t->d);`，因为`t->y`就是`today.y`，它不是指针。
+
+下面我要编写一个程序来计算距离考试的时间：
+
+```c
+#include <stdio.h>
+struct date{
+    int y;
+    int m;
+    int d;
+}today,ddl;
+void getstruct(struct date *t)
+{
+    scanf("%d%d%d",&t->y,&t->m,&t->d);
+}
+void putstruct(struct date *t)
+{
+    printf("%d\t%d\t%d",t->y,t->m,t->d);
+}
+int isLeap(struct date t)//判断是否是闰年
+{
+    int y=t.y,ju=0;
+    if ((y%400==0)||(y%100!=0&&y%4==0)) {ju=1;}
+    return ju;
+}
+int main()
+{
+    printf("Please input today:");
+    getstruct(&today);
+    printf("Please input the date of exam:");
+    getstruct(&ddl);
+    if ( today.m<=2 || ddl.m>=2 ) {
+
+    }//如果不涉及2月，就不必判断闰年
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 文件
+
+### 文件
+
+#### 格式化输入输出
+
+我们熟悉的`printf`和`scanf`就和文件有关，与`<stdio.h>`搭配。
+
+##### `printf`
+
+格式控制符的花样：
+
+```
+%[flags][width][.prec][hlL]type
+```
+
+###### Flag
+
+| Flag    |              |
+| ------- | ------------ |
+| -       | 左对齐       |
+| +       | 在前面放+或- |
+| (space) | 正数留空     |
+| 0       | 0填充        |
+
+这个要与width搭配才能看出名堂
+
+```c
+#include <stdio.h>
+int main()
+{
+    printf("%9d\n",123);
+    printf("%-9d",123);
+}
+
+```
+
+```
+      123
+123      
+```
+
+体现出`-`起到左对齐的作用。
+
+```c
+#include <stdio.h>
+int main()
+{
+    printf("%+9d\n",123);
+    printf("%-+9d\n",123);
+    printf("%+-9d\n",123);
+    printf("%-+9d\n",-123);
+    printf("%+-9d\n",-123);
+}
+```
+
+```
+     +123
++123     
++123     
+-123     
+-123     
+
+```
+
+逐行分析：
+
+* 输出的数是一个正数时
+  * 作为字符输出
+  * 在执行`-`左对齐大条件下，`+`仍作为字符输出
+  * 同上
+* 输出的数是一个负数时
+  * `+`不再作为字符输出，当然它同样也没有将数的符号改变
+  * 同上
+
+```c
+#include <stdio.h>
+int main()
+{
+    printf("%+--9d\n",-123);
+    printf("%--9d\n",-123);
+    printf("%--+9d\n",-123);
+    printf("%-+-9d\n",-123);
+    printf("%+--9d\n",123);
+    printf("%--9d\n",123);
+    printf("%--+9d\n",123);
+    printf("%-+-9d\n",123);
+}
+```
+
+```
+-123     
+-123     
+-123     
+-123     
++123     
+123      
++123     
++123     
+
+```
+
+* 连续的`-`不会抵消，仍然是左对齐
+* 
+
+
+
+
+
+
+
+
+
+
+
+#### 文件输入输出
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### 二进制文件
+
+
+
+
+
+
+
+
+
+
+
+### 位运算
+
+#### 按位运算
+
+
+
+
+
+
+
+
+
+#### 移位运算
+
+
+
+
+
+
+
+
+
+
+
+#### 位运算例子
+
+
+
+
+
+
+
+#### 位段
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
