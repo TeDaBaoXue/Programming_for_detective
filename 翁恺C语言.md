@@ -128,9 +128,9 @@ a=114,b=514,c=1919
 
 
 
-###### 在丑陋表达式中使用复合赋值，看看是否有区别
+##### 复合赋值和递增递减赋值
 
-> 研究这个是因为我记得研究指针的时候，有时复合赋值会出问题，说明复合赋值和单纯的赋值还是有区别的。要严谨，要深挖到底有什么不同。
+###### 复合赋值定义
 
 复合赋值就是五个算术运算符和赋值运算符结合起来。
 
@@ -146,15 +146,55 @@ a=114,b=514,c=1919
 
 可是我打出`a + = 514;`，CLion却给我报错了，说明这只是一个错误的说法，翁恺老师不严谨，让我白忙活。
 
----
+
+
+###### 递增递减赋值定义与特点
+
+递增递减赋值是单目运算符`++` `--`，只能对**变量**操作。
+
+`a++`和`++a`是有区别的：
+
+```c
+#include <stdio.h>
+int main()
+{
+    int a,b,c,d;
+    a=114;
+    a=a++;
+    printf("a=%d",a);
+    return 0;
+}
+```
+
+```
+a=114
+```
+
+体现出`a++`在当前步骤并没有使a的值发生改变。
+
+```c
+#include <stdio.h>
+int main()
+{
+    int a,b,c,d;
+    a=114;
+    a=++a;
+    printf("a=%d",a);
+    return 0;
+}
+```
+
+```
+a=115
+```
+
+体现出`++a`在当前步骤已经使a的值发生改变。
 
 
 
 
 
-
-
-##### 结合关系
+###### 结合关系
 
 > 不必纠结，大多数都是➡️，只有三种例外。
 
@@ -199,6 +239,116 @@ a=324
 
 
 
+
+
+
+###### 在丑陋表达式中使用复合赋值与递增递减复制，看看是否有区别
+
+> 研究这个是因为我记得研究指针的时候，有时复合赋值会出问题，说明复合赋值和单纯的赋值还是有区别的。要严谨，要深挖到底有什么不同。
+
+```c
+#include <stdio.h>
+int main()
+{
+    int a,b,c,d;
+    a=114;
+    a=a+=1919;
+    printf("a=%d",a);
+    return 0;
+}
+```
+
+```
+a=2033
+```
+
+这里没问题，`a=a+=1919;`等价于`a=a=a+1919;`
+
+```c
+#include <stdio.h>
+int main()
+{
+    int a,b,c,d;
+    scanf("%d",&d);
+    a=d;
+    a=(a=a*2)*6*(a=a+3);
+    b=d;
+    b=(b*=2)*6*(b+=3);
+    printf("a=%d\nb=%d",a,b);
+    return 0;
+}
+```
+
+```
+2
+a=168
+b=168
+```
+
+`a=(a=a*2)*6*(a=a+3);`等价于`a=(a*=2)*6*(a+=3)`
+
+没找到茬，是我脑洞不够大？
+
+来看看翁恺老师提出的超复杂的表达式：
+
+```c
+a = b+=c++-d+--e/-f
+```
+
+化简得：`a=b+c-d+(e-1)/f`
+
+> 严格来说，我的等价只考虑了要输出的那个变量，因此是不完整的。
+>
+> 详细的等价：
+>
+> ```c
+> a = b+=c++-d+--e/-f
+> ```
+>
+> 可拆分为
+>
+> ```c
+> a=b+c-d+(e-1)/(-f);
+> b=b+a;
+> e=e-1;
+> c=c+1;
+> ```
+
+```c
+#include <stdio.h>
+int main()
+{
+    int a,b,c,d,e,f,a1,b1,c1,d1,e1,f1;
+    a = b+=c++-d+--e/-f;
+    b1=b,c1=c,d1=d,e1=e,f1=f;
+    a1=b1+c1-d1+(e1-1)/-f1;
+    if (a1==a) printf("a1=a");
+    else printf("a1≠a");
+    return 0;
+}
+```
+
+```c
+a1≠a
+```
+
+这个结果是让我失望的，我以为会`a1=a`
+
+但是我在认识到`我的等价只考虑了要输出的那个变量，因此是不完整的。`后，我发现`b1=b,c1=c,d1=d,e1=e,f1=f;`应该上移。
+
+最后果然`a1=a`。
+
+> 我之前一直认为，杂糅的表达式吃力不讨好，那时因为`我的等价只考虑了要输出的那个变量，因此是不完整的。`，现在我发现杂糅的表达式能把很多式子放在一行内解决。还是有优点的。
+>
+> 但是我绝对不会用这种式子，自己容易看错，还给别人增加理解负担。
+
+
+
+---
+
+###### 复合赋值是很贴近底层的
+
+PDP-11标准里面也有`+=` `-=`的指令，所以能直接被机器读懂。C语言是贴近底层的语言。
 
 
 
@@ -3237,3 +3387,351 @@ $$
 
 
 
+变量代替数字，增加程序可读性
+2. `const int`比较麻烦
+
+```c
+#include <stdio.h>
+int main()
+{
+    int color;
+    char *favor=NULL;
+    scanf("%d",&color);
+    const int RED=1;
+    const int GREEN=2;
+    const int BLUE=3;
+    switch (color) {
+        case RED:
+            favor="red";
+            break;
+        case GREEN:
+            favor="green";
+            break;
+        case BLUE:
+            favor="blue";
+            break;
+        default:
+            favor="unknown";
+    }
+    printf("you favorite color is %s",favor);
+    return 0;
+}
+```
+
+```
+2
+you favorite color is green
+```
+
+当然`const int`的定义可以放在`main`外面。当然也可以用`#define`。
+
+```c
+#include <stdio.h>
+#define RED 1
+#define GREEN 2
+#define BLUE 3
+int main()
+```
+
+#### 枚举的定义规则
+
+用枚举定义就方便很多
+
+```c
+#include <stdio.h>
+enum COLOR {RED,GREEN,BLUE};//这是一个语句
+int main()
+{
+    int color;
+    char *favor=NULL;
+    scanf("%d",&color);
+    switch (color) {
+        case RED:
+            favor="red";
+            break;
+        case GREEN:
+            favor="green";
+            break;
+        case BLUE:
+            favor="blue";
+            break;
+        default:
+            favor="unknown";
+    }
+    printf("you favorite color is %s",favor);
+    return 0;
+}
+```
+
+```
+2
+you favorite color is blue
+```
+
+`enum {RED,GREEN,BLUE};`也是可以的，毕竟那个COLOR只是一个标识作用。
+
+##### 小技巧：计算长度
+
+枚举是默认从0开始赋值,和数组很像。
+
+`enum COLOR {RED,YELLOW,GREEN,NumberColors}`，那么NumberColors的值就是它前面的常量(我们关心的颜色)的个数。
+
+##### 不常规的定义
+
+也可以人为赋值
+
+```c
+enum {RED,GREEN=66,BLUE=99};
+```
+
+但是枚举赋值不能相同！这是一个缺点！
+
+```c
+enum {RED,GREEN=66,BLUE=0};
+```
+
+```c
+error:
+Duplicate case value: 'RED' and 'BLUE' both equal '0'
+```
+
+与其说这是缺点，不如说这个功能不为重复赋值而生。每个常量都要有所区分，才能起到一一对应的作用。
+
+此外，枚举赋值可以不递增，例如我可以让BLUE小于GREEN：
+
+```c
+enum {RED,GREEN=66,BLUE=2};
+```
+
+#### 枚举到底是什么类型？
+
+```c
+enum COLOR {RED,GREEN,BLUE};
+```
+
+其中的COLOR，前面说可要可不要，但是最好还是要有的，因为enum可以产生一个新的、属于我自己的数据类型COLOR，这很有趣。
+
+在函数里声明的时候也是把COLOR当一个新的数据类型(当然还是以int存储)，但是在C语言里面要和前面的enum一起用：
+
+```c
+#include <stdio.h>
+enum COLOR {RED,GREEN,BLUE,PURPLE,YELLOW,C20H19N3,};//这是一个语句
+void f(enum COLOR t,int n);
+int main()
+{
+    enum COLOR c=RED;//这就是定义
+    int n;
+    scanf("%d",&n);
+    f(c,n);
+    return 0;
+}
+void f(enum COLOR t,int n)
+{
+    printf("RED后的第%d个颜色值是%d",n,t+n);
+}
+
+```
+
+```
+3
+RED后的第3个颜色值是3
+```
+
+有点尴尬的是，本来想输出`RED后的第3个颜色是PURPLE`的，但是发现并不能返回常量名，可见其和数组的区别。
+
+#### 枚举的好处总结
+
+* 虽然枚举可以当成一个新的类型，但并不好用
+* 排比定义比`const int `方便，比`#define`好用
+  * 比`const int`也仅仅好在默认从0开始定义
+    * 因为`const int`如果用逗号隔开各个常量，在一行里定义，其实也不烦
+  * 比`#define`好在，我们知道我们得到的是int类型
+
+
+
+
+
+### 结构
+
+#### 结构类型
+
+> 说白了就是表格里的属性嘛。
+
+```c
+#include <stdio.h>
+int main()
+{
+    struct date {
+        int month;
+        int day;
+        int year;
+    };//CLion自动帮我补齐了分号
+    struct date today;//定义了一个结构类型的变量today，它的内容丰富
+    today.month=5;
+    today.day=27;
+    today.year=2022;
+    printf("The date of today is %d-%d-%d in American date form",today.month,today.day,today.year);
+    return 0;
+}
+```
+
+```
+The date of today is 5-27-2022 in American date form
+```
+
+这是结构类型的定义，可以放在函数里面，只为这个函数所用——但是我们更喜欢放在外面，能为所有函数所用。
+
+当然，分号始终不能丢，因为这只是一个定义的语句，大括号不是变量空间。
+
+最后输出的时候，翁恺老师用的是`%i`，这也是输出整型，不过是老式写法。
+
+> [C语言中输入输出所有格式控制符 | Tom's develop Blog (tomsworkspace.github.io)](https://tomsworkspace.github.io/2020/01/16/C语言中输入输出所有格式控制符/)
+
+##### 声明结构的三种方式
+
+除了一开始我们使用的方式，还有两种比较简陋的版本。
+
+```c
+struct point{
+        int x;
+        int y;
+    }p1,p2;
+```
+
+这种省略了后期再多打`struct point`来定义结构变量。
+
+还有一种，我们甚至不关注结构的名字：
+
+```c
+struct {
+        int x;
+        int y;
+    }p1,p2;
+```
+
+##### 每一个结构里的变量是如何存储的？
+
+我感觉结构的存储和数组有相似之处。
+
+```c
+#include <stdio.h>
+int main()
+{
+    struct t{
+        int x;
+        int y;
+        int z;
+    }p1,p2;
+    printf("%p-->p1.x\t%p-->p1.y\t%p-->p1.z\n%p-->p2.x\t%p-->p2.y\t%p-->p2.z\n",p1.x,p1.y,p1.z,p2.x,p2.y,p2.z);
+    return 0;
+}
+```
+
+```
+0x9-->p1.x	0x0-->p1.y	0x9055060-->p1.z
+0x59336d0-->p2.x	0x3-->p2.y	0x100d68883-->p2.z
+```
+
+```
+0x9-->p1.x	0x0-->p1.y	0x8c0c060-->p1.z
+0x4ffc6d0-->p2.x	0x3-->p2.y	0x10087a883-->p2.z
+```
+
+```
+0x9-->p1.x	0x0-->p1.y	0xa845060-->p1.z
+0x87856d0-->p2.x	0x3-->p2.y	0x1023ca883-->p2.z
+```
+
+好奇怪啊！这个地址真是诡异。
+
+诶，低级错误，天呐。竟然忘记加`&`了。
+
+```
+0x30c6f06c0-->p1.x	0x30c6f06c4-->p1.y	0x30c6f06c8-->p1.z
+0x30c6f06b0-->p2.x	0x30c6f06b4-->p2.y	0x30c6f06b8-->p2.z
+```
+
+```
+0x30d9d26c0-->p1.x	0x30d9d26c4-->p1.y	0x30d9d26c8-->p1.z
+0x30d9d26b0-->p2.x	0x30d9d26b4-->p2.y	0x30d9d26b8-->p2.z
+```
+
+不难总结出
+
+```mermaid
+flowchart TB
+	subgraph p2
+		p2.x
+		p2.y
+		p2.z
+	end
+```
+
+```mermaid
+flowchart TB
+subgraph p1
+		p1.x
+		p1.y
+		p1.z
+	end
+```
+
+发现：
+
+* p1 先定义，被压在堆栈下面，奇怪的是x也先定义，却被放在了上面！
+
+* p1内部、p2内部地址间隔4，p2.z和p1.x隔了8
+
+  * 有没有可能中间隔了p1或p2的地址？
+
+    * 检验
+
+    ```
+    0x30dc346c0-->p1.x	0x30dc346c4-->p1.y	0x30dc346c8-->p1.z
+    0x30dc346b0-->p2.x	0x30dc346b4-->p2.y	0x30dc346b8-->p2.z
+    0x30dc346c0-->p1	0x30dc346b0-->p2
+    ```
+
+    发现中间隔的并不是p1或p2，而且`&p1==&p1.x`,`&p2==&p2.x`
+
+
+
+##### 结构初始化
+
+```c
+#include <stdio.h>
+int main()
+{
+    struct t{
+        int x;
+        int y;
+        int z;
+    };
+    struct t p1={1,2,3};
+    struct t p2={.x=666,.z=9};
+    return 0;
+}
+```
+
+`struct t p1={1,2,3};`是依次初始化；`struct t p2={.x=666,.z=9};`是只初始化了p2.x和p2.z，p2.y默认初始化为0，这点和数组很像的。
+
+###### 简陋定义下的初始化
+
+之前提到有两种简陋定义，他们怎么初始化呢？
+
+* 错误做法
+
+  * 亡羊补牢
+
+    * ```c
+      struct t{
+              int x;
+              int y;
+              int z;
+          }p1,p2;
+          p1={1,2,3};
+      ```
+
+    * ```
+      error:
+      Expected e
