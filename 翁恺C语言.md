@@ -819,17 +819,22 @@ int main()
     printf("%p\n", &a);
     printf("%p\n", a);
     printf("%p\n", &a[0]);
+    printf("%p\n", a[0]);//Warning:Format specifies type 'void *' but the argument has type 'int'
     printf("%p\n", &a[1]);
     return 0;
 }
 ```
 
 ```
-0x16db57310
-0x16db57310
-0x16db57310
-0x16db57314
+Warning:Format specifies type 'void *' but the argument has type 'int'
+0x304dd66c0
+0x304dd66c0
+0x304dd66c0
+0x5beee0
+0x304dd66c4
 ```
+
+`a[0]`已经存储值了，和抽象的`a`不一样，所以取`a[0]`地址就得用`&`了。
 
 * 疑惑
   * 最让人费解的是`printf("%p\n", a);`a竟然可以当地址，这里也许“指"的含义可以初见端倪
@@ -1014,17 +1019,37 @@ warning: sizeof on array function parameter will return size of 'int *' instead 
 
 ##### 一个dalao关于数组变量是特殊的指针的证明
 
-先说结论：数组a和* const p是同一类型的指针。
+先说结论：数组`a`和`* const p`是同一类型的指针。
 
 以下代码报错，说明a和p都不能修改指向的地址。
 
 `int a[5]; int * const p; a++; p++;`
 
-以下代码编译通过，并且输出结果正确，说明可以更改指向的地址所存的内容。
+以下代码编译通过，并且输出结果正确，说明可以更改指向的地址所存的内容:
 
-`int a[5]; int * const p = a[0]; a[0] = 0; (*a)++; printf("%p\n", a); printf("%d\n", *a); (*p)++; printf("%p\n", p); printf("%d\n", *p);`
+```c
+#include <stdio.h>
+int main() {
+    int a[5];
+    int * const p = a[0];
+    a[0] = 0;
+    (*a)++;
+    printf("%p\n",a);
+    printf("%d\n",*a);
+    (*p)++;
+    printf("%p\n",p);
+    printf("%d\n",*p);
+    return 0;
+}
+```
 
-以下代码编译产生两处警告相同，均进行了强制类型转换，运行输出结果相同。
+```
+0x3053146d0
+1
+
+```
+
+以下代码编译产生两处警告相同，均进行了强制类型转换，运行输出结果相同:
 
 ```cpp
 int a[5];
@@ -1053,6 +1078,31 @@ printf("%p\n", c);
 
 
 
+
+##### 直觉之外的玩法
+
+> 翁恺老师的课程质量真是一言难尽，虽是全网最佳，但全靠同行衬托。他的课，除了视频内容衔接生硬之外，还有一个缺点就是不能启发别人探索。
+>
+> 例如“拨动指针”的玩法就没有提到，这是拓宽初学者直觉的重要一步！
+
+```c
+#include <stdio.h>
+int main() {
+    int a[5]={1,2,3,4,5};
+    int *p=a;//起初指针p指向了数组a的头部
+    printf("起初指针p指向了数组a的头部\ta[0]=p[0]=*p=%d\n",*p);
+    p++;//拨动指针
+    printf("拨动指针后\t指针指向a[1]\ta[1]=*p=%d\n",*p);
+    printf("但是此时p[1]=a[2]=%d≠*p\t=>这就是指针拨动后，相对位置变了",p[1]);
+    return 0;
+}
+```
+
+```
+起初指针p指向了数组a的头部	a[0]=p[0]=*p=1
+拨动指针后	指针指向a[1]	a[1]=*p=2
+但是此时p[1]=a[2]=3≠*p	=>这就是指针拨动后，相对位置变了
+```
 
 
 
@@ -1094,6 +1144,17 @@ int main()
   
     return 0;
 }
+```
+
+```
+33
+!
+49
+A B C
+A B C
+A B C
+A A C
+
 ```
 
 那么我现在的问题是，char是不是也可以是像数组变量那样“自己也能表达地址"？毕竟char的数值与ASCII码一一对应，计算机里应该有固定的区域存储这些字符。
