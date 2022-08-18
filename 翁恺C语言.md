@@ -849,7 +849,7 @@ int main()
 
 指针就是保存地址的变量
 
-```cpp
+```c
 #include <stdio.h>
 int main()
 {
@@ -871,7 +871,7 @@ int main()
 
 在函数里面可以通过指针访问外面的变量，可以称作"指向"外面的变量。
 
-```cpp
+```c
 #include <stdio.h>
 void f(int *p)
 {
@@ -902,7 +902,7 @@ f函数已经获得了访问外面变量i的能力了，那么何为访问？
 
 下面我们目睹一段体现指针实力的代码
 
-```cpp
+```c
 #include <stdio.h>
 void f(int *p)
 {
@@ -946,7 +946,7 @@ int main()
 
 > 翁恺老师一开始用的例子太过复杂，我打算用一个简单的例子来证明传进去的参数不是数组而是指针。
 
-```cpp
+```c
 #include <stdio.h>
 void explore(int a[])
 {
@@ -976,11 +976,10 @@ warning: sizeof on array function parameter will return size of 'int *' instead 
 
 > 不过 `sizeof(a)=8`而不是4，可能和架构有关，32位架构下就是4。
 
-* 函数参数表中的数组其实就是指针，以下几种写法都是等价的
-  * `int sum(int *ar,int n)`
-  * `int sum(int ar,int)`
-  * `int sum(int *,int n)`
-  * `int sum(int [],int)`
+* 函数参数表中的数组其实就是指针，以下两种写法都是等价的
+  * `int sum(int *ar)`
+  * `int sum(int ar[])`
+  * 但是`int sum(int ar)`是不对的，计算机会把`ar`当作一个变量而不是数组；`int sum(int [])`也不对，没这种写法
 
 > 怪不得当初自己写函数，想把一个长度为10的数组传进去却失败了，原来是因为我用 `int f(int ar[10])`传进去的只是 `ar[10]`这个值罢了，不是传的整个数组。
 >
@@ -998,7 +997,7 @@ warning: sizeof on array function parameter will return size of 'int *' instead 
 
 * `*`运算符既可以对指针使用，也可以对数组变量使用；`[]`运算符既可以对数组使用，也可以对指针使用
 
-  * ```cpp
+  * ```c
     #include <stdio.h>
     int main()
     {
