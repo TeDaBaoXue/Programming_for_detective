@@ -1882,6 +1882,26 @@ qwefqqe
 
 ```
 
+```c
+#include <stdio.h>
+int main()
+{
+    char *string=NULL;
+    scanf("%s",string);
+    printf("%s",string);
+    return 0;
+}
+```
+
+```
+adsf
+
+```
+
+`char *string=NULL;`也不行。
+
+
+
 这样的初始化也不行：
 
 ```c
@@ -1912,8 +1932,24 @@ int main()
 > ```
 > The boy next door♂
 > ```
->
-> 
+
+还是数组靠谱：
+
+```c
+#include <stdio.h>
+int main()
+{
+    char string[100];
+    scanf("%s",string);
+    printf("%s",string);
+    return 0;
+}
+```
+
+```
+nishiyigeyige
+nishiyigeyige
+```
 
 
 
@@ -2259,8 +2295,6 @@ int main()
 }
 ```
 
-
-
 ```
 please input 2 strings(length≤100):
 苏维埃社会主义
@@ -2500,11 +2534,19 @@ you favorite color is blue
 
 `enum {RED,GREEN,BLUE};`也是可以的，毕竟那个COLOR只是一个标识作用。
 
+`RED`储存了`0`这个值，`GREEN`储存了`1`这个值，依次类推。
+
+当然，它们都是const，后续不能重新赋值。
+
+
+
 ##### 小技巧：计算长度
 
 枚举是默认从0开始赋值,和数组很像。
 
 `enum COLOR {RED,YELLOW,GREEN,NumberColors}`，那么NumberColors的值就是它前面的常量(我们关心的颜色)的个数。
+
+
 
 ##### 不常规的定义
 
@@ -2532,6 +2574,8 @@ Duplicate case value: 'RED' and 'BLUE' both equal '0'
 ```c
 enum {RED,GREEN=66,BLUE=2};
 ```
+
+
 
 #### 枚举到底是什么类型？
 
