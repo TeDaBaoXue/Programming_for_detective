@@ -3246,8 +3246,8 @@ struct date{
     int y;
     int m;
     int d;
-}today,t0;
-void getstruct(struct date today)
+}today/*Warning:Previous declaration is here*/,t0;
+void getstruct(struct date today/*Warning:Declaration shadows a variable in the global scope*/)
 {
     scanf("%d%d%d",&today.y,&today.m,&today.d);
 }
@@ -3260,14 +3260,6 @@ int main()
 }
 ```
 
-仍然有warning，是和参数命名有关的：
-
-```
-Declaration shadows a variable in the global scope
-```
-
-可能是因为today之前已经被定义过了，所以这里计算机有点懵，但是编译可以通过。
-
 ```
 Please input today:1919 8 10
 today is 0-0-0
@@ -3278,7 +3270,48 @@ today is 0-0-0
 * getstruct函数成功读取today
 * 退出getstruct之后today又清零了！！！
 
-所以导致
+Warning 的意思是函数形参today和全局定义的today重叠了，所以我尝试把函数形参名称改为t：
+
+```c
+#include <stdio.h>
+struct date{
+    int y;
+    int m;
+    int d;
+}today,t0/*Warning:全局变量 't0' 从未使用*/;
+void getstruct(struct date t/*Warning:形参 从未使用*/)
+{
+    scanf("%d%d%d",&today.y,&today.m,&today.d);
+}
+int main()
+{
+    printf("Please input today:");
+    getstruct(today);
+    printf("today is %d-%d-%d",today.y,today.m,today.d);
+    return 0;
+}
+```
+
+```
+Please input today:1919 8 10
+today is 1919-8-10
+```
+
+但是`Warning:形参 从未使用`可以说明：`getstruct(today)`能成功读入`today`是因为`today`是全局变量，所以函数里的`scanf("%d%d%d",&today.y,&today.m,&today.d);`操作执行之后，`today`就被读入了。
+
+在学结构体之前，形参和实参名称相同也没关系啊！
+
+> 
+
+是不是因为之前没遇到这种情况（函数的功能是scanf很多个变量）?
+
+> 
+
+
+
+-----
+
+> 过去的奇怪研究，
 
 ```c
 #include <stdio.h>
