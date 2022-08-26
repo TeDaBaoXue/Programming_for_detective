@@ -1244,13 +1244,15 @@ p7=0x1024a70a8
 
 如果是数组定义的话，那么肯定是按顺序排列的。但是p[i].p指向的不是数组啊，为什么和之前的散列分布不一样呢？
 
+哦对！之前只对第一个指针初始化，后面的指针都是随机赋值。
+
 ```c
 #include<stdio.h>
-int i1,i2,i3,i4,i5,i6,i7;
+int i1;
 struct pointer{
     char *name;
     int *p;
-}p1={"p1",&i1},p2={"p2",&i2},p3={"p3",&i3},p4={"p4",&i4},p5={"p5",&i5},p6={"p6",&i6},p7={"p7",&i7};
+}p1={"p1",&i1},p2={"p2"},p3={"p3"},p4={"p4"},p5={"p5"},p6={"p6"},p7={"p7"};
 struct pointer p[]={p1,p2,p3,p4,p5,p6,p7};
 ```
 
@@ -1259,7 +1261,169 @@ Error:
 Initializer element is not a compile-time constant
 ```
 
-Error出现在p[]里的p1处，
+Error出现在p[]里的p1处，意思是“初始值设定项元素不是一个编译时间常数“，看了一些文章后明白了，`p[]`的定义不在函数里面，而是在全局，因此不能被执行，我们不得不把这种定义弄得很单纯，不能有多余操作！
+
+把结构体数组的定义放在main函数里就完事了：
+
+```c
+#include<stdio.h>
+int i1;
+struct pointer{
+    char *name;
+    int *p;
+}p1={"p1",&i1},p2={"p2"},p3={"p3"},p4={"p4"},p5={"p5"},p6={"p6"},p7={"p7"};
+void bubble(struct pointer a[])
+{
+    int i,j;
+    struct pointer t;
+    for (i=0;i<7;i++) {
+        for (j=0;j<6-i;j++) {
+            if (a[j].p>a[j+1].p) {
+                t=a[j],a[j]=a[j+1],a[j+1]=t;
+            }
+        }
+    }
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",a[i].name,a[i].p);
+    }
+}
+int main()
+{
+    int i;
+    struct pointer p[]={p1,p2,p3,p4,p5,p6,p7};
+    printf("Before Bubble:\n");
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",p[i].name,p[i].p);
+    }
+    printf("After Bubble:\n");
+    bubble(p);
+    return 0;
+}
+```
+
+```
+Before Bubble:
+p1=0x100427088
+p2=0x0
+p3=0x0
+p4=0x0
+p5=0x0
+p6=0x0
+p7=0x0
+After Bubble:
+p2=0x0
+p3=0x0
+p4=0x0
+p5=0x0
+p6=0x0
+p7=0x0
+p1=0x100427088
+```
+
+真是怪啊，没初始化就分配0地址啊。
+
+```c
+#include<stdio.h>
+int i1,i2,i3,i4,i5,i6,i7;
+struct pointer{
+    char *name;
+    int *p;
+}p1={"p1",&i1},p2={"p2",&i2},p3={"p3",&i3},p4={"p4",&i4},p5={"p5",&i5},p6={"p6",&i6},p7={"p7",&i7};
+void bubble(struct pointer a[])
+{
+    int i,j;
+    struct pointer t;
+    for (i=0;i<7;i++) {
+        for (j=0;j<6-i;j++) {
+            if (a[j].p>a[j+1].p) {
+                t=a[j],a[j]=a[j+1],a[j+1]=t;
+            }
+        }
+    }
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",a[i].name,a[i].p);
+    }
+}
+int main()
+{
+    int i;
+    struct pointer p[]={p1,p2,p3,p4,p5,p6,p7};
+    printf("Before Bubble:\n");
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",p[i].name,p[i].p);
+    }
+    printf("After Bubble:\n");
+    bubble(p);
+    return 0;
+}
+```
+
+这把全初始化，结果又是按顺序分配地址的，非常符合堆栈。
+
+```
+Before Bubble:
+p1=0x104752088
+p2=0x10475208c
+p3=0x104752090
+p4=0x104752094
+p5=0x104752098
+p6=0x10475209c
+p7=0x1047520a0
+After Bubble:
+p1=0x104752088
+p2=0x10475208c
+p3=0x104752090
+p4=0x104752094
+p5=0x104752098
+p6=0x10475209c
+p7=0x1047520a0
+
+```
+
+真是的，我为了显示`p1=... `的形式，引入结构体，结果没看到之前的效果，我还是肉眼看地址对应关系罢：
+
+```c
+#include<stdio.h>
+void bubble(int *a[])
+{
+    int i,j,*t;
+    for (i=0;i<7;i++) {
+        for (j=0;j<6-i;j++) {
+            if (a[j]>a[j+1]) {
+                t=a[j],a[j]=a[j+1],a[j+1]=t;
+            }
+        }
+    }
+    for (i=0;i<7;i++) {
+        printf("%p\t",a[i]);
+    }
+}
+int main()
+{
+    int a;//此处a是否初始化不影响p1的地址相貌
+    int *p1=&a,*p2,*p3,*p4,*p5,*p6,*p7;
+    int *p[]={p1,p2,p3,p4,p5,p6,p7};
+    printf("from p1 to p7,以十六进制输出:\n%p\t%p\t%p\t%p\t%p\t%p\t%p\n",p1,p2,p3,p4,p5,p6,p7);
+    printf("After Bubble:\n");
+    bubble(p);
+    return 0;
+}
+```
+
+```
+from p1 to p7,以十六进制输出:
+0x304cde6a8	0x200861010	0x200875000	0x304cde7a8	0x108969010	0x108969010	0xd0aa800d655900cf
+After Bubble:
+0x108969010	0x108969010	0x200861010	0x200875000	0x304cde6a8	0x304cde7a8	0xd0aa800d655900cf	
+```
+
+这就很诡异，为什么：
+
+* 出现了一样的地址？
+* 分隔得很开，且较有规律
+* 最后一个定义的p7这么大!
+
+
 
 
 
@@ -4002,6 +4166,8 @@ int main()
 
 
 ```
+
+
 
 
 
