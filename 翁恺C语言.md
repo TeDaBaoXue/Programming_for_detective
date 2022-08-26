@@ -1109,13 +1109,157 @@ int main()
 
 > 都是我所不熟悉的
 
+先试指针数组
 
+```c
+void map(int *a[],int *p1,int *p2,int *p3,int *p4,int *p5,int *p6,int *p7) //寻求一个映射，否则排序之后就不知道谁是谁了
+{
+    int i;
+    for (i=0;i<7;i++) {
+        switch/*Error:Statement requires expression of integer type ('int *' invalid)*/ (a[i]) {
+            case p1/*Error:Integer constant expression must have integer type, not 'int *'*/:
+                printf("p1=%p\t");break;
 
+        }
+    }
+}
+```
 
+然而还是不行，我终于想起，switch语句只能适用于`int`类型，即便`int *`也是不行的。
 
+只能用结构体数组了：
 
+```c
+#include<stdio.h>
+struct pointer{
+    char *name;
+    int *p;
+}p[7]={{"p1"},{"p2"},{"p3"},{"p4"},{"p5"},{"p6"},{"p7"}};
+void bubble(struct pointer a[])
+{
+    int i,j;
+    struct pointer t;
+    for (i=0;i<7;i++) {
+        for (j=0;j<7-i;j++) {
+            if (a[j].p>a[j+1].p) {
+                t=a[j],a[j]=a[j+1],a[j+1]=t;
+            }
+        }
+    }
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",a[i].name,a[i].p);
+    }
+}
+int main()
+{
+    int i;
+    printf("Before Bubble:\n");
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",p[i].name,p[i].p);
+    }
+    printf("After Bubble:\n");
+    bubble(p);
+    return 0;
+}
+```
 
+```
+Before Bubble:
+p1=0x0
+p2=0x0
+p3=0x0
+p4=0x0
+p5=0x0
+p6=0x0
+p7=0x0
+After Bubble:
+p1=0x0
+p2=0x0
+p3=0x0
+p4=0x0
+p5=0x0
+p6=0x0
+p7=0x0
 
+```
+
+结构体中的指针成员真不一样诶，如果不做初始化，竟然都指向0地址！
+
+只能初始化了：
+
+```c
+#include<stdio.h>
+int i1,i2,i3,i4,i5,i6,i7;
+struct pointer{
+    char *name;
+    int *p;
+}p[7]={{"p1",&i1},{"p2",&i2},{"p3",&i3},{"p4",&i4},{"p5",&i5},{"p6",&i6},{"p7",&i7}};
+void bubble(struct pointer a[])
+{
+    int i,j;
+    struct pointer t;
+    for (i=0;i<7;i++) {
+        for (j=0;j<6-i;j++) {
+            if (a[j].p>a[j+1].p) {
+                t=a[j],a[j]=a[j+1],a[j+1]=t;
+            }
+        }
+    }
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",a[i].name,a[i].p);
+    }
+}
+int main()
+{
+    int i;
+    printf("Before Bubble:\n");
+    for (i=0;i<7;i++) {
+        printf("%s=%p\n",p[i].name,p[i].p);
+    }
+    printf("After Bubble:\n");
+    bubble(p);
+    return 0;
+}
+```
+
+```
+Before Bubble:
+p1=0x1024a7090
+p2=0x1024a7094
+p3=0x1024a7098
+p4=0x1024a709c
+p5=0x1024a70a0
+p6=0x1024a70a4
+p7=0x1024a70a8
+After Bubble:
+p1=0x1024a7090
+p2=0x1024a7094
+p3=0x1024a7098
+p4=0x1024a709c
+p5=0x1024a70a0
+p6=0x1024a70a4
+p7=0x1024a70a8
+
+```
+
+哦对，如果是数组定义的话，那么肯定是按顺序排列的。看来我不得不一个个定义了：
+
+```c
+#include<stdio.h>
+int i1,i2,i3,i4,i5,i6,i7;
+struct pointer{
+    char *name;
+    int *p;
+}p1={"p1",&i1},p2={"p2",&i2},p3={"p3",&i3},p4={"p4",&i4},p5={"p5",&i5},p6={"p6",&i6},p7={"p7",&i7};
+struct pointer p[]={p1,p2,p3,p4,p5,p6,p7};
+```
+
+```
+Error:
+Initializer element is not a compile-time constant
+```
+
+Error出现在p[]里的p1处，
 
 
 
