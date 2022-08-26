@@ -1049,12 +1049,67 @@ from p1 to p7,以十六进制输出:
 
 所有的地址相貌都符合以往的印象了！
 
+
+
 接下来的研究点：
 
 为什么连续定义多个指针时：
 
 1. 在大家都没初始化的情况下，就第一个指针的值是一个很奇怪的很小的数，其他地址相貌都正常
+   1. 目前没有任何研究思路，太接近底层了
 2. 相貌正常的地址是如何随机分配的？
+   1. 可以排序研究
+
+
+
+接下来我要将各个指针的值冒泡排序🫧：
+
+```c
+#include<stdio.h>
+void bubble(int a[])
+{
+    int i,j,t;
+    for (i=0;i<7;i++) {
+        for (j=0;j<7-i;j++) {
+            if (a[j]>a[j+1]) {
+                t=a[j],a[j]=a[j+1],a[j+1]=t;
+            }
+        }
+    }
+}
+void map(int a[],int *p1,int *p2,int *p3,int *p4,int *p5,int *p6,int *p7) //寻求一个映射，否则排序之后就不知道谁是谁了
+{
+    int i;
+    for (i=0;i<7;i++) {
+        switch (a[i]) {
+            case p1/*Error:Integer constant expression must have integer type, not 'int *'*/:
+                printf("p1=%p\t");break;
+            
+        }
+    }
+}
+int main()
+{
+    int *p1,*p2,*p3,*p4,*p5,*p6,*p7;
+    printf("from p1 to p7,以十六进制输出:\np1=%p\tp2=%p\tp3=%p\tp4=%p\tp5=%p\tp6=%p\tp7=%p\n",p1,p2,p3,p4,p5,p6,p7);
+    int a[]={p1,p2,p3,p4,p5,p6,p7};
+    bubble(a);
+
+    return 0;
+}
+```
+
+本打算排序后输出`p4=...	p5=...	p1=...`但是switch语句并不能把整型的a[i]与指针pi对应，所以我下面有两个选择：
+
+* 用结构体数组，每个地址都附属了一个名字属性
+
+  > 很有趣的是，按照时间顺序，我这里是没有学结构体的，这是笔记的时间处理问题。
+
+* 用指针数组，使得a[i]可以和指针pi对应
+
+> 都是我所不熟悉的
+
+
 
 
 
